@@ -7,23 +7,20 @@ namespace Microsoft.DiaSymReader.Tools
 {
     internal static class EnumerableUtilities
     {
-        public static int IndexOf<T>(this IEnumerable<T> sequence, Func<T, bool> selector) =>
-            FirstOrDefaultWithIndex(sequence, selector).Index;
-
-        public static (T Item, int Index) FirstOrDefaultWithIndex<T>(this IEnumerable<T> sequence, Func<T, bool> predicate)
+        public static int IndexOf<T>(this IEnumerable<T> sequence, Func<T, bool> predicate)
         {
             int index = 0;
             foreach (var item in sequence)
             {
                 if (predicate(item))
                 {
-                    return (item, index);
+                    return index;
                 }
 
                 index++;
             }
 
-            return (default(T), -1);
+            return -1;
         }
 
         public static IEnumerable<(T Value, int Index)> SelectWithIndex<T>(this IEnumerable<T> sequence)

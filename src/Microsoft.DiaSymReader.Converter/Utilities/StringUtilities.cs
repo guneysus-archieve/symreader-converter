@@ -26,7 +26,7 @@ namespace Microsoft.DiaSymReader.Tools
         public static string GetLongestCommonPrefix(IEnumerable<string> strings)
         {
             int prefixLength = 0;
-            string firstString = null;
+            string? firstString = null;
             foreach (var str in strings)
             {
                 if (firstString == null)

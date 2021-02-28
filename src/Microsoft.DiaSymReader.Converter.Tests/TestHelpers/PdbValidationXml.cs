@@ -17,7 +17,7 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
     {
         private const PdbToXmlOptions Options = PdbToXmlOptions.IncludeSourceServerInformation | PdbToXmlOptions.IncludeEmbeddedSources | PdbToXmlOptions.ResolveTokens;
 
-        public static void VerifyWindowsPdb(TestResource portable, TestResource windows, string expectedXml, PdbDiagnostic[] expectedDiagnostics = null, PortablePdbConversionOptions options = null)
+        public static void VerifyWindowsPdb(TestResource portable, TestResource windows, string expectedXml, PdbDiagnostic[]? expectedDiagnostics = null, PortablePdbConversionOptions? options = null)
         {
             VerifyWindowsMatchesExpected(windows, expectedXml);
             // TODO: VerifyPortableReadNativelyMatchesExpected(portable, expectedXml);
@@ -34,6 +34,18 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
             var adjustedActualXml = AdjustForInherentDifferences(actualXml);
 
             AssertEx.AssertLinesEqual(adjustedExpectedXml, adjustedActualXml, "Comparing Windows PDB with expected XML");
+        }
+
+        public static void VerifyPortablePdb(
+            TestResource portable,
+            string expectedXml,
+            PdbToXmlOptions options = Options)
+        {
+            var portablePEStream = new MemoryStream(portable.PE);
+            var portablePdbStream = new MemoryStream(portable.Pdb);
+            var actualXml = PdbToXmlConverter.ToXml(portablePdbStream, portablePEStream, options);
+
+            AssertEx.AssertLinesEqual(expectedXml, actualXml, "Comparing Portable PDB with expected XML");
         }
 
         public static void VerifyPortableReadNativelyMatchesExpected(TestResource portable, string expectedXml)
@@ -70,7 +82,7 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
             return element.ToString();
         }
 
-        public static void VerifyWindowsConvertedFromPortableMatchesExpected(TestResource portable, string expectedXml, PdbDiagnostic[] expectedDiagnostics, PortablePdbConversionOptions options, bool validateTimeIndifference)
+        public static void VerifyWindowsConvertedFromPortableMatchesExpected(TestResource portable, string expectedXml, PdbDiagnostic[]? expectedDiagnostics, PortablePdbConversionOptions? options, bool validateTimeIndifference)
         {
             var portablePEStream = new MemoryStream(portable.PE);
             var portablePdbStream = new MemoryStream(portable.Pdb);
@@ -103,8 +115,8 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
 
         private static string InspectDiagnostic(PdbDiagnostic diagnostic)
         {
-            string args = diagnostic.Args != null ? $", new[] {{ { string.Join(", ", diagnostic.Args.Select(a => "\"" + a + "\""))} }}" : null;
-            string token = diagnostic.Token != 0 ? $"0x{diagnostic.Token:X8}" : "0";
+            var args = diagnostic.Args != null ? $", new[] {{ { string.Join(", ", diagnostic.Args.Select(a => "\"" + a + "\""))} }}" : null;
+            var token = diagnostic.Token != 0 ? $"0x{diagnostic.Token:X8}" : "0";
             return $"new PdbDiagnostic(PdbDiagnosticId.{diagnostic.Id}, {token}{args})";
         }
 
@@ -115,7 +127,7 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
             int age;
             using (var provider = MetadataReaderProvider.FromPortablePdbStream(portablePdbStream, MetadataStreamOptions.LeaveOpen))
             {
-                SymReaderHelpers.GetWindowsPdbSignature(provider.GetMetadataReader().DebugMetadataHeader.Id, out guid, out stamp, out age);
+                SymReaderHelpers.GetWindowsPdbSignature(provider.GetMetadataReader().DebugMetadataHeader!.Id, out guid, out stamp, out age);
             }
 
             var symReader = SymReaderHelpers.CreateWindowsPdbReader(windowsPdbStream);
@@ -155,11 +167,11 @@ namespace Microsoft.DiaSymReader.Tools.UnitTests
                     e.RemoveAttributes();
                     e.Add(name);
                 }
-                else if (e.Name == "bucket" && e.Parent.Name == "dynamicLocals")
+                else if (e.Name == "bucket" && e.Parent?.Name == "dynamicLocals")
                 {
                     // dynamic flags might be 0-padded differently
                     var flags = e.Attribute("flags");
-                    flags.SetValue(flags.Value.TrimEnd('0'));
+                    flags!.SetValue(flags.Value.TrimEnd('0'));
                 }
             }
 

@@ -113,7 +113,7 @@ namespace Microsoft.DiaSymReader.Tools
             }
 
             // TODO: report warning
-            return default(AssemblyReferenceHandle);
+            return default;
         }
 
         private ImmutableArray<string> BuildAssemblyRefDisplayNames()
@@ -187,7 +187,7 @@ namespace Microsoft.DiaSymReader.Tools
                 _lazyTypeSpecificationMap.Value.TryGetValue(spec, out typeSpec);
 
         /// <returns>Null if serialized type name format is not supported for the specified type.</returns>
-        public string GetSerializedTypeName(EntityHandle typeHandle) =>
+        public string? GetSerializedTypeName(EntityHandle typeHandle) =>
             _serializedTypeNameDecoder.GetSerializedTypeName(typeHandle);
 
         internal static void BuildQualifiedName(StringBuilder builder, MetadataReader reader, TypeDefinitionHandle typeHandle, char nestedNameSeparator)
@@ -248,7 +248,7 @@ namespace Microsoft.DiaSymReader.Tools
             }
 
             assemblyRefHandle = (typeRef.ResolutionScope.Kind == HandleKind.AssemblyReference) ?
-                (AssemblyReferenceHandle)typeRef.ResolutionScope : default(AssemblyReferenceHandle);
+                (AssemblyReferenceHandle)typeRef.ResolutionScope : default;
         }
 
         private static void BuildQualifiedName(StringBuilder builder, MetadataReader reader, StringHandle namespaceHandle, StringHandle nameHandle, IReadOnlyList<StringHandle> nestedNames, char nestedNameSeparator)
@@ -320,12 +320,14 @@ namespace Microsoft.DiaSymReader.Tools
 
             foreach (var handle in Reader.TypeDefinitions)
             {
-                map[GetSerializedTypeName(handle)] = handle;
+                // type-defs always have serialized name:
+                map[GetSerializedTypeName(handle)!] = handle;
             }
 
             foreach (var handle in Reader.TypeReferences)
             {
-                map[GetSerializedTypeName(handle)] = handle;
+                // type-refs always have serialized name:
+                map[GetSerializedTypeName(handle)!] = handle;
             }
 
             for (int rowId = 1; rowId <= Reader.GetTableRowCount(TableIndex.TypeSpec); rowId++)
@@ -366,7 +368,13 @@ namespace Microsoft.DiaSymReader.Tools
                             return default;
                         }
 
-                        string serializedName = (string)fixedArgs[0].Value;
+                        var serializedName = fixedArgs[0].Value as string;
+                        if (serializedName == null)
+                        {
+                            // TODO: report error
+                            return default;
+                        }
+
                         int nameIndex = serializedName.LastIndexOf('+');
                         if (nameIndex < 0)
                         {
@@ -439,7 +447,7 @@ namespace Microsoft.DiaSymReader.Tools
                 }
             }
 
-            return default(TypeDefinitionHandle);
+            return default;
         }
 
         private MethodDefinitionHandle FindMethodByName(TypeDefinition typeDef, string name)
@@ -453,10 +461,10 @@ namespace Microsoft.DiaSymReader.Tools
                 }
             }
 
-            return default(MethodDefinitionHandle);
+            return default;
         }
 
-        private TypeDefinitionHandle FindSingleNestedTypeByNamePrefixAndSuffix(TypeDefinition typeDef, string prefix, string suffix = null)
+        private TypeDefinitionHandle FindSingleNestedTypeByNamePrefixAndSuffix(TypeDefinition typeDef, string prefix, string? suffix = null)
         {
             var candidate = default(TypeDefinitionHandle);
             foreach (var typeHandle in typeDef.GetNestedTypes())
@@ -472,7 +480,7 @@ namespace Microsoft.DiaSymReader.Tools
                     else
                     {
                         // multiple candidates
-                        return default(TypeDefinitionHandle);
+                        return default;
                     }
                 }
             }
@@ -526,11 +534,11 @@ namespace Microsoft.DiaSymReader.Tools
             public bool IsSystemType(string type) => true;
             public string GetTypeFromSerializedName(string name) => name;
 
-            public string GetPrimitiveType(PrimitiveTypeCode typeCode) => null;
-            public string GetSystemType() => null;
-            public string GetSZArrayType(string elementType) => null;
-            public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => null;
-            public string GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => null;
+            public string GetPrimitiveType(PrimitiveTypeCode typeCode) => "";
+            public string GetSystemType() => "";
+            public string GetSZArrayType(string elementType) => null!;
+            public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => "";
+            public string GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => "";
             public PrimitiveTypeCode GetUnderlyingEnumType(string type) => default;
         }
 

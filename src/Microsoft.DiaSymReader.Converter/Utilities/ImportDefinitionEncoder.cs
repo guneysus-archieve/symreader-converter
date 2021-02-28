@@ -17,7 +17,7 @@ namespace System.Reflection.Metadata
             Builder = builder;
         }
 
-        public void Type(EntityHandle type, string alias = null)
+        public void Type(EntityHandle type, string? alias = null)
         {
             if (alias != null)
             {
@@ -34,7 +34,7 @@ namespace System.Reflection.Metadata
             Builder.WriteCompressedInteger(CodedIndex.TypeDefOrRefOrSpec(type));
         }
 
-        public void Namespace(string namespaceName, string alias = null, AssemblyReferenceHandle externAlias = default(AssemblyReferenceHandle))
+        public void Namespace(string namespaceName, string? alias = null, AssemblyReferenceHandle externAlias = default)
         {
             if (!externAlias.IsNil)
             {

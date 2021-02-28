@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Collections
@@ -63,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Collections
             return true;
         }
 
-        internal static bool Equals(T[] left, T[] right, IEqualityComparer<T> elementComparer)
+        internal static bool Equals(T[]? left, T[]? right, IEqualityComparer<T> elementComparer)
         {
             if (ReferenceEquals(left, right))
             {
@@ -86,8 +87,8 @@ namespace Microsoft.CodeAnalysis.Collections
             return true;
         }
 
-        public bool Equals(T[] x, T[] y) => Equals(x, y, _elementComparer);
-        public bool Equals(ImmutableArray<T> x, ImmutableArray<T> y) => Equals(x, y, _elementComparer);
+        public bool Equals([AllowNull] T[] x, [AllowNull] T[] y) => Equals(x, y, _elementComparer);
+        public bool Equals([AllowNull] ImmutableArray<T> x, [AllowNull] ImmutableArray<T> y) => Equals(x, y, _elementComparer);
 
         public int GetHashCode(T[] x) => Hash.CombineValues(x, _elementComparer);
         public int GetHashCode(ImmutableArray<T> x) => Hash.CombineValues(x, _elementComparer);

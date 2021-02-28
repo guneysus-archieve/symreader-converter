@@ -25,7 +25,7 @@ namespace Microsoft.DiaSymReader.Tools
 
         public PortablePdbConversionOptions(
             bool suppressSourceLinkConversion = false,
-            IEnumerable<KeyValuePair<string, string>> srcSvrVariables = null)
+            IEnumerable<KeyValuePair<string, string>>? srcSvrVariables = null)
         {
             var variables = srcSvrVariables?.ToImmutableArray() ?? ImmutableArray<KeyValuePair<string, string>>.Empty;
             PdbConverterPortableToWindows.ValidateSrcSvrVariables(variables, nameof(srcSvrVariables));
